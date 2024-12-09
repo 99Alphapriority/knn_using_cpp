@@ -3,8 +3,13 @@
 #include<fstream>
 #include<vector>
 #include<sstream>
+#include<algorithm>
 
-#define B0_C0   0
-#define B0_C1   1
-#define B1_C0   2
-#define B1_C1   3
+typedef enum
+{
+	B0_C0,
+	B0_C1,
+	B1_C0,
+	B1_C1,
+	LAST_LABEL
+}labels;

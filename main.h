@@ -1,15 +1,23 @@
 #include "common.h"
 
-class logFileReader
+class TrainingDataSet
+{
+public:
+	std::vector<std::vector<float>> getRTTData(int w, std::vector<std::vector<float>> dataSet);
+	std::vector<labels> getRTTTarget(int w, std::vector<std::vector<float>> dataSet);
+
+};
+
+class LogFileReader
 {
 public:
     //constructor
-    logFileReader(const std::string& fileName):
+    LogFileReader(const std::string& fileName):
             fileName(fileName)
     {}
 
     //Function to fetch data from the log files
-    std::vector<float> getRTTData();
+    std::vector<float> getTrainingSetData();
 
 private:
     std::string fileName;
