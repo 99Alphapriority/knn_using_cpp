@@ -4,6 +4,8 @@
 #include<vector>
 #include<sstream>
 #include<algorithm>
+#include<cmath>
+#include<map>
 
 typedef enum
 {

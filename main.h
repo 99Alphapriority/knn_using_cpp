@@ -3,6 +3,8 @@
 class TrainingDataSet
 {
 public:
+	std::vector<std::vector<float>> trainingSet;
+
 	std::vector<std::vector<float>> getRTTData(int w, std::vector<std::vector<float>> dataSet);
 	std::vector<labels> getRTTTarget(int w, std::vector<std::vector<float>> dataSet);
 

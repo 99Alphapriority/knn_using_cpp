@@ -1,5 +1,57 @@
 #include "main.h"
 
+float DTWDistance(std::vector<float> train, std::vector<float> test, int w)
+{
+	std::map<std::pair<int, int>, float> DTW;
+
+	w = std::max(w, std::abs(static_cast<int>(train.size()) - static_cast<int>(test.size())));
+
+	for(int i = -1; i < train.size(); i++)
+	{
+		for(int j = -1; j < test.size(); j++)
+		{
+			DTW[{i,j}] = std::numeric_limits<float>::infinity();
+		}
+	}
+
+	DTW[{-1,-1}] = 0.0;
+
+	for(int i = 0; i < train.size(); i++)
+	{
+		for(int j = std::max(0, i-w); j < std::min(static_cast<int>(test.size()), i + w); j++)
+		{
+			float dist = std::pow(train[i]-test[j],2);
+			DTW[{i,j}] = dist + std::min(DTW[{i-1, j}], std::min(DTW[{i, j-1}], DTW[{i-1, j-1}]));
+		}
+	}
+
+	return std::sqrt(DTW[{train.size()-1, test.size()-1}]);
+}
+
+labels knn(TrainingDataSet trainingDataSet, std::vector<float> test, int w, int n_neighbours=1)
+{
+	std::vector<float> tmpDistance;
+	std::vector<std::vector<float>> tmpVectors;
+	std::vector<labels> tmpLabels;
+
+	for(std::vector<float> j: trainingDataSet.trainingSet)
+	{
+		labels label = static_cast<labels>(j.back());
+		j.pop_back();
+
+		float distance = DTWDistance(j, test, w);
+		
+		auto idx = std::lower_bound(tmpDistance.begin(), tmpDistance.end(), distance) - tmpDistance.begin();
+
+		j.push_back(static_cast<float>(label));
+		tmpDistance.insert(tmpDistance.begin() + idx, distance);
+		tmpVectors.insert(tmpVectors.begin() + idx, j);
+		tmpLabels.insert(tmpLabels.begin() + idx, label);
+	}
+
+	return tmpLabels[0];
+}
+
 std::vector<labels> TrainingDataSet::getRTTTarget(int w, std::vector<std::vector<float>> dataSet)
 {
 	int instance_per_label = dataSet[0].size() / w;
@@ -130,27 +182,35 @@ int main()
 	std::vector<std::vector<float>> x_all = trainingDataSet.getRTTData(rttInputData.size(), dataSet); 
 	std::vector<labels> y_all = trainingDataSet.getRTTTarget(rttInputData.size(), dataSet);
 
+	trainingDataSet.trainingSet = x_all;
+
+	for(int i = 0; i < y_all.size(); i++)
+		trainingDataSet.trainingSet[i].push_back(y_all[i]);
+
 #if 0
 	//To print the x_all vector
-	for(int i = 0; i < x_all.size(); i++)
+	for(int i = 0; i < trainingDataSet.trainingSet.size(); i++)
 	{
 		if(0 == i)
 			std::cout << "[";
-		for(int j = 0; j < x_all[0].size(); j++)
+		for(int j = 0; j < trainingDataSet.trainingSet[0].size(); j++)
 		{
-			if(j % 10 == 0)
+			if(j % 11 == 0)
 				std::cout << "[";
-			std::cout << x_all[i][j];
+			std::cout << trainingDataSet.trainingSet[i][j];
 
-			if((j+1) % 10 ==0)
+			if((j+1) % 11 ==0)
 				std::cout << "]" << std::endl;
 			else
 				std::cout << "  ";
 		}
-		if(i == x_all.size() - 1)
+		if(i == trainingDataSet.trainingSet.size() - 1)
 			std::cout << "]" << std::endl;
 	}
 #endif
+
+	labels predict = knn(trainingDataSet, rttInputData, rttInputData.size());
+	std::cout << "predict: " << predict << std::endl;
 
 	return 0;
 }
